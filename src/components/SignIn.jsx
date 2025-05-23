@@ -1,9 +1,49 @@
-import React from 'react';
+import React, { use } from 'react';
+import { AuthContext } from './contexts/AuthContext';
 
 const SignIn = () => {
-    
+    const {signInUser} = use(AuthContext);
     const handleSignIn = e =>{
         e.preventDefault();
+
+        const form = e.target;
+        const email = form.email.value;
+        const password = form.password.value;
+
+        //firebase sign in
+        signInUser(email, password)
+        .then(result => {
+            console.log(result.user)
+
+            const signInInfo = {
+               
+                email,
+                lastSignInTime: result.user?.metadata?.lastSignInTime
+
+            }
+
+            //Update signIn info to the database
+
+            fetch('http://localhost:3000/users', {
+
+                method: "PATCH",
+                headers:{
+                    'content-type': 'application/json'
+                },
+
+                body: JSON.stringify(signInInfo)
+
+
+            })
+            .then(res=> res.json())
+            .then(data => {
+                console.log("After update", data)
+            })
+        })
+        .catch(error => {
+            console.log(error)
+        })
+        
     }
     
     return (
